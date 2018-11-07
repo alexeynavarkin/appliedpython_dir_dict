@@ -11,21 +11,21 @@ class DirDict(MutableMapping, Mapping):
             Mapping methods(__contains__, keys, items, values, get, __eq__, __ne__)
             MutableMapping methods(pop, popitem, clear, update, setdefault).
     """
-    def __new__(cls, dir):
-        if not os.path.exists(dir):
+    def __new__(cls, path):
+        if not os.path.exists(path):
             # TODO: maybe better create dir
             raise ValueError("Not exists.")
-        if not os.path.isdir(dir):
+        if not os.path.isdir(path):
             raise ValueError("Not a directory.")
         return super().__new__(cls)
 
-    def __init__(self, dir):
-        self._dir = os.path.abspath(dir)
+    def __init__(self, path):
+        self._dir = os.path.abspath(path)
         super().__init__()
 
     def __iter__(self):
-        for dir in os.listdir(self._dir):
-            yield dir
+        for obj in os.listdir(self._dir):
+            yield obj
 
     def __len__(self):
         return len(os.listdir(self._dir))
