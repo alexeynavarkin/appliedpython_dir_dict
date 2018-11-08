@@ -1,6 +1,6 @@
 from collections.abc import Mapping, MutableMapping
 from shutil import rmtree, copytree
-import os
+from os import path, remove, listdir
 
 
 class DirDict(MutableMapping, Mapping):
@@ -11,60 +11,55 @@ class DirDict(MutableMapping, Mapping):
             Mapping methods(__contains__, keys, items, values, get, __eq__, __ne__)
             MutableMapping methods(pop, popitem, clear, update, setdefault).
     """
-    def __new__(cls, path):
-        if not os.path.exists(path):
+    def __new__(cls, folder_path):
+        if not path.exists(folder_path):
             # TODO: maybe better create dir
             raise ValueError("Not exists.")
-        if not os.path.isdir(path):
+        if not path.isdir(folder_path):
             raise ValueError("Not a directory.")
         return super().__new__(cls)
 
-    def __init__(self, path):
-        self._dir = os.path.abspath(path)
+    def __init__(self, folder_path):
+        self._dir = path.abspath(folder_path)
         super().__init__()
 
     def __iter__(self):
-        for obj in os.listdir(self._dir):
+        for obj in listdir(self._dir):
             yield obj
 
     def __len__(self):
-        return len(os.listdir(self._dir))
+        return len(listdir(self._dir))
 
     def __getitem__(self, item):
-        path = os.path.join(self._dir, item)
-        if os.path.isdir(path):
-            return DirDict(path)
-        elif os.path.isfile(path):
-            with open(path, "r") as f:
-                string = f.read()
-            return string
+        item_path = path.join(self._dir, item)
+        if path.isdir(item_path):
+            return DirDict(item_path)
+        elif path.isfile(item_path):
+            with open(item_path, "r") as f:
+                data = f.read()
+            return data
         else:
             raise KeyError("No such file or directory.")
 
     def __delitem__(self, key):
-        # TODO: how to deal with deleted folder return?
-        path = os.path.join(self._dir, key)
-        if os.path.isdir(path):
-            rmtree(path)
-            return None
-        elif os.path.isfile(path):
-            with open(path, "r") as f:
-                text = f.read()
-            os.remove(path)
-            return text
+        item_path = path.join(self._dir, key)
+        if path.isdir(item_path):
+            rmtree(item_path)
+        elif path.isfile(item_path):
+            remove(item_path)
         else:
             raise KeyError("No such file or directory.")
 
     def __setitem__(self, key, value):
-        path = os.path.join(self._dir, key)
-        if os.path.isdir(path):
-            rmtree(path)
-        elif os.path.isfile(path):
-            os.remove(path)
+        item_path = path.join(self._dir, key)
+        if path.isdir(item_path):
+            rmtree(item_path)
+        elif path.isfile(item_path):
+            remove(item_path)
         if isinstance(value, type(self)):
-            copytree(value.dir, path)
+            copytree(value.dir, item_path)
         else:
-            with open(path, "w") as f:
+            with open(item_path, "w") as f:
                 f.write(value)
 
     @property
