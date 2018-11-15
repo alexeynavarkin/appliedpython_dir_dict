@@ -3,7 +3,7 @@ from shutil import rmtree, copytree
 from os import path, remove, listdir
 
 
-class DirDict(MutableMapping, Mapping):
+class DirDict(MutableMapping):
     """
         DirDict class implements python dict interface to work with files on disk in specified dir.
 
